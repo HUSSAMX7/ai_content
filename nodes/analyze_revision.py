@@ -3,7 +3,6 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from graph_state import GraphState
 from llm_config import llm
 
-
 def analyze_revision(state: GraphState) -> dict:
     draft = state["draft"]
     raw_feedback = state.get("raw_feedback", "")

@@ -9,6 +9,7 @@ from .analyze_revision import analyze_revision
 from .routing import (
     route_after_approve,
     route_after_chapters_review,
+    route_after_collect_input,
     route_after_human_review,
     route_entry,
 )
@@ -29,6 +30,7 @@ __all__ = [
     "analyze_revision",
     "route_after_approve",
     "route_after_chapters_review",
+    "route_after_collect_input",
     "route_after_human_review",
     "route_entry",
     "prepare_export",

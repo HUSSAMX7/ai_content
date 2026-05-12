@@ -9,6 +9,14 @@ def route_entry(state: GraphState) -> str:
     return "analyze_template" if state["mode"] == "template" else "collect_input"
 
 
+def route_after_collect_input(state: GraphState) -> str:
+    return (
+        "collect_input"
+        if state.get("action") == "continue_interview"
+        else "propose_default_chapters"
+    )
+
+
 def route_after_human_review(state: GraphState) -> str:
     action = state["action"]
     if action == "approve":

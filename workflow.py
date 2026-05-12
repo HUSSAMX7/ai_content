@@ -12,6 +12,7 @@ from nodes import (
     route_entry,
     route_after_approve,
     route_after_chapters_review,
+    route_after_collect_input,
     route_after_human_review,
     save_output,
     update_chapter,
@@ -55,17 +56,9 @@ def create_workflow():
     # تمبلت → مراجعة المحاور مباشرة
     workflow.add_edge("analyze_template", "review_chapter")
 
-    # مقابلة ديناميكية: تكرار حتى interview_done ثم اقتراح الفصول
-    def _route_after_collect_input(state: GraphState) -> str:
-        return (
-            "collect_input"
-            if state.get("action") == "continue_interview"
-            else "propose_default_chapters"
-        )
-
     workflow.add_conditional_edges(
         "collect_input",
-        _route_after_collect_input,
+        route_after_collect_input,
         {
             "collect_input": "collect_input",
             "propose_default_chapters": "propose_default_chapters",

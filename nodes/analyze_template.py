@@ -3,22 +3,9 @@ from schemas import ChapterList
 from llm_config import llm
 from langchain_core.messages import HumanMessage, SystemMessage
 
+from debug_brief import print_analyzed_template_chapters
+
 _structured_llm = llm.with_structured_output(ChapterList)
-
-
-def _print_analyzed_chapters(chapters: list[dict[str, str]]) -> None:
-    print("\n" + "═" * 60)
-    print("  [analyze_template] استخراج الفصول من التمبلت")
-    print(f"  عدد الفصول: {len(chapters)}")
-    print("═" * 60)
-    for i, ch in enumerate(chapters, start=1):
-        title = ch.get("title", "")
-        desc = ch.get("description", "")
-        print(f"\n── فصل {i} ──")
-        print(f"العنوان: {title}")
-        print("الوصف / التعليمات:")
-        print(desc if desc.strip() else "(فارغ)")
-    print("\n" + "═" * 60 + "\n")
 
 
 def analyze_template(state: GraphState) -> dict:
@@ -72,5 +59,5 @@ def analyze_template(state: GraphState) -> dict:
     ]
     result = _structured_llm.invoke(messages)
     chapters = [{"title": c.title, "description": c.description} for c in result.chapters]
-    _print_analyzed_chapters(chapters)
+    print_analyzed_template_chapters(chapters)
     return {"chapters": chapters}

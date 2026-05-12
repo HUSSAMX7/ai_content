@@ -21,3 +21,4 @@ class GraphState(TypedDict):
     clean_requirements: str
     interview_logs: list[dict]
     final_content: str
+    file_name: str

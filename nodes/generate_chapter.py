@@ -4,6 +4,24 @@ from graph_state import GraphState
 from llm_config import llm
 
 
+def _build_prior_chapters_context(state: GraphState) -> str:
+    """ملخص مكثف للفصول المولّدة سابقاً — يمنع التكرار ويربط السياق."""
+    generated = state.get("generated_chapters") or []
+    if not generated:
+        return ""
+    chapters = state["chapters"]
+    summaries = []
+    for i, text in enumerate(generated):
+        title = chapters[i]["title"] if i < len(chapters) else f"Chapter {i+1}"
+        preview = text[:500].strip()
+        summaries.append(f"[{title}]\n{preview}...")
+    return (
+        "\n\n## الفصول المكتوبة سابقاً (للسياق فقط — لا تكرر محتواها):\n"
+        + "\n---\n".join(summaries)
+        + "\n\nتعليمات: تجنب تكرار أي معلومة ذُكرت أعلاه. ابنِ على ما سبق وأضف الجديد."
+    )
+
+
 def generate_chapter(state: GraphState) -> dict:
     idx = state["current_chapter_index"]
     chapter = state["chapters"][idx]
@@ -11,6 +29,8 @@ def generate_chapter(state: GraphState) -> dict:
     chapter_description = chapter.get("description", "")
     chapter_samples = state["chapter_samples"]
     resource = state["resource"]
+    clean_requirements = state.get("clean_requirements") or ""
+    global_notes = state.get("global_notes") or []
     regeneration_notes = state.get("regeneration_notes") or []
     raw_feedback = state.get("raw_feedback", "")
 
@@ -34,6 +54,27 @@ def generate_chapter(state: GraphState) -> dict:
             + "\nYou MUST produce a distinctly different version in structure, angle, and phrasing.\n"
         )
 
+    # ── سياق الفصول السابقة ──
+    prior_context = _build_prior_chapters_context(state)
+
+    # ── المتطلبات المؤكدة من العميل ──
+    requirements_block = ""
+    if clean_requirements.strip():
+        requirements_block = (
+            f"\n\n## متطلبات المشروع المؤكدة من العميل:\n"
+            f"{clean_requirements}\n\n"
+            "تعليمات: اكتب محتوى هذا الفصل بما يخدم هذه المتطلبات. "
+            "ركّز على النقاط المتعلقة بهذا الفصل تحديداً."
+        )
+
+    # ── تعليمات كتابة عامة من المستخدم ──
+    notes_block = ""
+    if global_notes:
+        notes_block = (
+            "\n\n## تعليمات كتابة عامة من العميل:\n"
+            + "\n".join(f"- {n}" for n in global_notes)
+        )
+
     system_prompt = (
         "You are a specialist technical writer. Write one chapter by learning "
         "style and structure from the provided references.\n\n"
@@ -51,7 +92,10 @@ def generate_chapter(state: GraphState) -> dict:
         "9) Use content from at least two chapter samples when possible, especially for overlapping themes.\n"
         "10) Never mention the source file names, tags, or reference project identity in the final text.\n"
         "11) Samples may come from multiple source files. Always merge patterns across samples; do not rely on a single sample."
-        f"{avoidance_block}\n\n"
+        f"{avoidance_block}"
+        f"{requirements_block}"
+        f"{notes_block}"
+        f"{prior_context}\n\n"
         f"Chapter-matched samples:\n{chapter_samples}\n\n"
         f"General project context:\n{resource}"
     )

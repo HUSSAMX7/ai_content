@@ -86,8 +86,8 @@ def run():
         sample = ""
         print("No references uploaded. Switching to zero-data mode.")
 
-    # template_path = r"C:\Users\hosam\OneDrive\سطح المكتب\قياس\تمبلت.docx"
-    template_path = ""
+    template_path = r"C:\Users\hosam\OneDrive\سطح المكتب\قياس\تمبلت.docx"
+    # template_path = ""
     resource = "the project was in 2000 and the project name is وكيل"
 
 
@@ -124,6 +124,7 @@ def run():
         feedback_notes=[],
         raw_feedback="",
         interview_logs=[],
+        global_notes=[],
         requirements_memo="",
         clean_requirements="",
     )

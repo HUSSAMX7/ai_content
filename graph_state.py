@@ -20,5 +20,5 @@ class GraphState(TypedDict):
     requirements_memo: str
     clean_requirements: str
     interview_logs: list[dict]
+    global_notes: list[str]
     final_content: str
-    file_name: str

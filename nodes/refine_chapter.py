@@ -13,6 +13,9 @@ def refine_chapter(state: GraphState) -> dict:
     text_analysis = state.get("text_analysis", [])
     feedback_notes = state.get("feedback_notes", [])
 
+    clean_requirements = state.get("clean_requirements") or ""
+    global_notes = state.get("global_notes") or []
+
     history_block = ""
     if text_analysis:
         history_block = "Revision history:\n"
@@ -24,6 +27,19 @@ def refine_chapter(state: GraphState) -> dict:
             )
         history_block += "\n"
 
+    requirements_block = ""
+    if clean_requirements.strip():
+        requirements_block = (
+            f"\n\nProject requirements:\n{clean_requirements}\n"
+        )
+
+    notes_block = ""
+    if global_notes:
+        notes_block = (
+            "\n\nGeneral writing instructions from the client:\n"
+            + "\n".join(f"- {n}" for n in global_notes)
+        )
+
     system_prompt = (
         "You are a specialist technical writer. Revise one chapter based on a structured revision history.\n\n"
         "Strict rules:\n"
@@ -33,6 +49,8 @@ def refine_chapter(state: GraphState) -> dict:
         "4) Keep the same language as the references.\n"
         "5) Preserve coherence and technical depth.\n\n"
         f"References (style and structure only):\n{sample}"
+        f"{requirements_block}"
+        f"{notes_block}"
     )
 
     user_prompt = f"Chapter title: {chapter_title}\n"

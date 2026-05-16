@@ -1,33 +1,59 @@
 from langgraph.types import interrupt
 
 from graph_state import GraphState
-from nodes.classify_response import _classify_response
+from nodes.notes_sync import sync_notes, generate_draft_review_prompt
 
 
 def human_review(state: GraphState) -> dict:
     idx = state["current_chapter_index"]
     total = len(state["chapters"])
-    chapter_title = state["chapters"][idx]["title"]
+    chapter = state["chapters"][idx]
+    chapter_title = chapter["title"]
+    clean_reqs = state.get("clean_requirements", "")
+    ack = state.get("last_acknowledgment", "")
 
-    response = interrupt(
-        f"الفصل {idx + 1} من {total}: {chapter_title}\n\n"
-        f"{state['draft']}\n\n"
-        "────────\n"
-        "راجع المسودة. إذا مناسبة لك، اكتب لي موافق وننتقل للفصل التالي.\n"
-        "وإذا تحتاج تعديل، اكتب ملاحظاتك بشكل واضح عشان نحدّث النص."
+    prompt = generate_draft_review_prompt(
+        idx=idx,
+        total=total,
+        chapter_title=chapter_title,
+        draft=state["draft"],
+        chapter_notes=chapter.get("chapter_notes", ""),
+        acknowledgment=ack,
+    )
+    response = interrupt(prompt)
+
+    notes = sync_notes(
+        current_clean_requirements=clean_reqs,
+        user_input=response,
+        context="draft_review",
+        chapter_title=chapter_title,
+        current_chapter_note=chapter.get("chapter_notes", ""),
     )
 
+    # update chapter_notes
+    updated_chapters = list(state["chapters"])
+    updated_chapters[idx] = {**updated_chapters[idx], "chapter_notes": notes.chapter_note}
 
-    
+    base = {
+        "clean_requirements": notes.updated_clean_requirements,
+        "chapters": updated_chapters,
+        "last_acknowledgment": notes.acknowledgment,
+    }
 
-    action = _classify_response(response)
-    if action == "approve":
-        return {"action": "approve"}
-    if action == "regenerate":
+    if notes.intent == "approve":
+        return {**base, "action": "approve"}
+
+    if notes.intent == "note_only":
+        return {**base, "action": "note_only"}
+
+    if notes.intent == "regenerate":
         return {
+            **base,
             "action": "regenerate",
             "raw_feedback": response,
             "text_analysis": [],
             "feedback_notes": [],
         }
-    return {"action": "refine", "raw_feedback": response}
+
+    # refine
+    return {**base, "action": "refine", "raw_feedback": response}

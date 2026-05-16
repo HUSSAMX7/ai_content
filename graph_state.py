@@ -22,3 +22,4 @@ class GraphState(TypedDict):
     interview_logs: list[dict]
     final_content: str
     file_name: str
+    last_acknowledgment: str

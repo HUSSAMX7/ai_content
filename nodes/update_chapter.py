@@ -38,4 +38,4 @@ def update_chapter(state: GraphState) -> dict:
     ]
 
     result: ChapterList = _structured_llm.invoke(messages)
-    return {"chapters": [{"title": c.title, "description": c.description} for c in result.chapters]}
+    return {"chapters": [{"title": c.title, "description": c.description, "chapter_notes": c.chapter_notes} for c in result.chapters]}

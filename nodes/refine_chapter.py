@@ -9,7 +9,9 @@ def refine_chapter(state: GraphState) -> dict:
     chapter = state["chapters"][idx]
     chapter_title = chapter["title"]
     chapter_description = chapter.get("description", "")
+    chapter_notes = chapter.get("chapter_notes", "")
     sample = state["sample"]
+    clean_requirements = state.get("clean_requirements", "")
     text_analysis = state.get("text_analysis", [])
     feedback_notes = state.get("feedback_notes", [])
 
@@ -35,14 +37,23 @@ def refine_chapter(state: GraphState) -> dict:
         f"References (style and structure only):\n{sample}"
     )
 
+    # Build user requirements block
+    reqs_block = ""
+    if clean_requirements:
+        reqs_block += f"\n== USER REQUIREMENTS (MUST FOLLOW) ==\n{clean_requirements}\n== END REQUIREMENTS ==\n"
+    if chapter_notes:
+        reqs_block += f"\n== CHAPTER-SPECIFIC NOTES FROM USER ==\n{chapter_notes}\n== END NOTES ==\n"
+
     user_prompt = f"Chapter title: {chapter_title}\n"
     if chapter_description:
         user_prompt += f"Chapter description: {chapter_description}\n"
+    user_prompt += reqs_block
     user_prompt += (
         f"\n{history_block}"
         f"Current draft:\n{state['draft']}\n\n"
         "Revise the chapter according to the latest feedback_notes "
-        "while preserving all previous corrections."
+        "while preserving all previous corrections. "
+        "You MUST also follow the user requirements and chapter notes above."
     )
 
     messages = [SystemMessage(content=system_prompt), HumanMessage(content=user_prompt)]

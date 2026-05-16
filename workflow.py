@@ -74,6 +74,7 @@ def create_workflow():
             "extract_chapter_samples": "extract_chapter_samples",
             "generate_chapter": "generate_chapter",
             "update_chapter": "update_chapter",
+            "review_chapter": "review_chapter",
         },
     )
     workflow.add_edge("update_chapter", "review_chapter")
@@ -88,6 +89,7 @@ def create_workflow():
             "approve_chapter": "approve_chapter",
             "refine_chapter": "analyze_revision",
             "generate_chapter": "generate_chapter",
+            "human_review": "human_review",
         }
     )
 

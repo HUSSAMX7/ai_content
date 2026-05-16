@@ -9,8 +9,10 @@ def generate_chapter(state: GraphState) -> dict:
     chapter = state["chapters"][idx]
     chapter_title = chapter["title"]
     chapter_description = chapter.get("description", "")
+    chapter_notes = chapter.get("chapter_notes", "")
     chapter_samples = state["chapter_samples"]
     resource = state["resource"]
+    clean_requirements = state.get("clean_requirements", "")
     regeneration_notes = state.get("regeneration_notes") or []
     raw_feedback = state.get("raw_feedback", "")
 
@@ -56,15 +58,24 @@ def generate_chapter(state: GraphState) -> dict:
         f"General project context:\n{resource}"
     )
 
+    # Build user requirements block
+    reqs_block = ""
+    if clean_requirements:
+        reqs_block += f"\n\n== USER REQUIREMENTS (MUST FOLLOW) ==\n{clean_requirements}\n== END REQUIREMENTS ==\n"
+    if chapter_notes:
+        reqs_block += f"\n== CHAPTER-SPECIFIC NOTES FROM USER ==\n{chapter_notes}\n== END NOTES ==\n"
+
     user_prompt = (
         f"Chapter title: {chapter_title}\n"
-        f"General project context:\n{resource}"
+        f"General project context:\n{resource}\n"
     )
     if chapter_description:
         user_prompt += f"Chapter description: {chapter_description}\n"
+    user_prompt += reqs_block
     user_prompt += (
         f"\nTask:\n"
         f"- Produce only the '{chapter_title}' chapter.\n"
+        "- You MUST follow the user requirements and chapter notes above precisely.\n"
         "- First infer a suitable internal outline from the chapter-matched samples, then write the final chapter.\n"
         "- Keep depth comparable to the corresponding reference chapter type.\n"
         "- Prefer synthesis over paraphrased summary.\n"

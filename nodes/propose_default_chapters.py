@@ -39,5 +39,5 @@ def propose_default_chapters(state: GraphState) -> dict:
         HumanMessage(content=f"Clean requirements:\n{clean_requirements}"),
     ]
     result = _structured_llm.invoke(messages)
-    chapters = [{"title": c.title, "description": c.description} for c in result.chapters]
+    chapters = [{"title": c.title, "description": c.description, "chapter_notes": ""} for c in result.chapters]
     return {"chapters": chapters}

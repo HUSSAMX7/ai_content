@@ -58,6 +58,6 @@ def analyze_template(state: GraphState) -> dict:
         HumanMessage(content=f"Template text:\n\n{state['template']}"),
     ]
     result = _structured_llm.invoke(messages)
-    chapters = [{"title": c.title, "description": c.description} for c in result.chapters]
+    chapters = [{"title": c.title, "description": c.description, "chapter_notes": ""} for c in result.chapters]
     print_analyzed_template_chapters(chapters)
     return {"chapters": chapters}

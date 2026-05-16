@@ -23,6 +23,8 @@ def route_after_human_review(state: GraphState) -> str:
         return "approve_chapter"
     if action == "regenerate":
         return "generate_chapter"
+    if action == "note_only":
+        return "human_review"
     return "refine_chapter"
 
 
@@ -36,8 +38,11 @@ def route_after_approve(state: GraphState) -> str:
 
 
 def route_after_chapters_review(state: GraphState) -> str:
-    if state["action"] != "approve":
-        return "update_chapter"
-    if _has_references(state):
-        return "extract_chapter_samples"
-    return "generate_chapter"
+    action = state["action"]
+    if action == "approve":
+        if _has_references(state):
+            return "extract_chapter_samples"
+        return "generate_chapter"
+    if action == "note_only":
+        return "review_chapter"
+    return "update_chapter"

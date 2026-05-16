@@ -126,6 +126,7 @@ def run():
         interview_logs=[],
         requirements_memo="",
         clean_requirements="",
+        last_acknowledgment="",
     )
 
     result = graph.invoke(initial_state, config=config)
